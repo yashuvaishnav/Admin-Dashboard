@@ -12,6 +12,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useState } from 'react';
 
 
 
@@ -20,15 +21,17 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 const defaultTheme = createTheme();
 
 export const Login = () => {
+  const [email,setEmail] = useState("")
+  const [password,setPassword] = useState("")
 
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+
+  const handleLoginData = (e) => {
+    e.preventDefault();
+    console.log(email,password);
+    setEmail("");
+    setPassword("");
+
   };
 
   return (
@@ -49,7 +52,7 @@ export const Login = () => {
           <Typography component="h1" variant="h5">
             Log in
           </Typography>
-          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Box component="form" noValidate sx={{ mt: 3 }}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
@@ -59,6 +62,8 @@ export const Login = () => {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
+                  value={email}
+                  onChange={(e)=>{setEmail(e.target.value)}}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -70,6 +75,8 @@ export const Login = () => {
                   type="password"
                   id="password"
                   autoComplete="new-password"
+                  value={password}
+                  onChange={(e)=>{setPassword(e.target.value)}}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -84,6 +91,7 @@ export const Login = () => {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              onClick={handleLoginData}
             >
               Log in
             </Button>

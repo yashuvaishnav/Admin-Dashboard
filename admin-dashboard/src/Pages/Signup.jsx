@@ -12,24 +12,25 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-
-
-
-// TODO remove, this demo shouldn't need to reset the theme.
+import { useState } from 'react';
 
 const defaultTheme = createTheme();
 
 export const SignUp = () => {
 
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
+  const handleSignupData = (e) => {
+    e.preventDefault();
+    console.log(firstName,lastName,email,password)
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setPassword("");
+  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -49,7 +50,7 @@ export const SignUp = () => {
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
-          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Box component="form" noValidate sx={{ mt: 3 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -60,6 +61,8 @@ export const SignUp = () => {
                   id="firstName"
                   label="First Name"
                   autoFocus
+                  value={firstName}
+                  onChange={(e)=>{setFirstName(e.target.value)}}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -70,6 +73,8 @@ export const SignUp = () => {
                   label="Last Name"
                   name="lastName"
                   autoComplete="family-name"
+                  value={lastName}
+                  onChange={(e)=>{setLastName(e.target.value)}}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -80,6 +85,8 @@ export const SignUp = () => {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
+                  value={email}
+                  onChange={(e)=>{setEmail(e.target.value)}}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -91,6 +98,8 @@ export const SignUp = () => {
                   type="password"
                   id="password"
                   autoComplete="new-password"
+                  value={password}
+                  onChange={(e)=>{setPassword(e.target.value)}}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -105,6 +114,7 @@ export const SignUp = () => {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              onClick={handleSignupData}
             >
               Sign Up
             </Button>
