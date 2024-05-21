@@ -1,12 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-// import Button from "@mui/material/Button";
+import Button from "@mui/material/Button";
 import { DataGrid } from '@mui/x-data-grid';
+import axios from "axios";
 
 
 export const AdminDashboard = () => {
-  // ratings_average, author name, title, first_publish_year, subject,
-  // author_birth_date, author_top_work
+  const [searchValue,setSearchValue] = useState("");
+  const [booksData,setBooksData] = useState([]);
+  const [isLoading,setIsLoading] = useState(false);
+
 const columns = [
   { field: 'ratingAverage', headerName: 'Rating Average', width: 120 },
   { field: 'authorName', headerName: 'Author name', width: 150 },
@@ -27,7 +30,45 @@ const rows = [
   { id: 2, title: 'Snow', authorName: 'Aline',ratingAverage : 4, firstPublishYear: 2010, subject:"Economy",authorBirthDate : Date.now(),authorTopWork : "no"},
   { id: 3, title: 'Snow', authorName: 'Ssm',ratingAverage : 2, firstPublishYear: 2018, subject:"Physics",authorBirthDate : Date.now(),authorTopWork : "yes"},
   { id: 4, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 4, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 5, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 6, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 7, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 8, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 9, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 10, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 11, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 12, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 13, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 14, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 15, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
+  { id: 16, title: 'Snow', authorName: 'Jullie',ratingAverage : 1, firstPublishYear: 2015, subject:"Scince",authorBirthDate : Date.now(),authorTopWork : "no"},
 ];
+
+const fetchBooksData = async() => {
+  try {
+    setIsLoading(true);
+    const res = await axios.get("");
+    setBooksData(res)
+    setIsLoading(false);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const changeBookData = async() => {
+  try {
+    const res = await axios.put("","data");
+    console.log(res);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+useEffect(()=>{
+  fetchBooksData();
+  
+},[])
 
   return (
     <MainDiv>
@@ -42,6 +83,7 @@ const rows = [
           <h3>Nua</h3>
         </div>
         <h1>Dashboard</h1>
+        <Button>Logout</Button>
       </LeftSide>
       <RightSide>
         <div className="header">
@@ -53,8 +95,12 @@ const rows = [
             alt="profile"
           />
         </div>
-        <Button variant="contained">Contained</Button>
-        <input type="text" placeholder="Search By Author"  />
+        <input type="text" placeholder="Search By Author" value={searchValue} onChange={(e)=>{setSearchValue(e.target.value)}} />
+        <Button variant="contained">ASC </Button>
+        <Button variant="contained">DSC </Button>
+        <Button variant="contained" onClick={changeBookData}>Change Book </Button>
+
+
         {/* <hr /> */}
         <div style={{ height: 400, width: '100%' }}>
       <DataGrid
@@ -65,8 +111,8 @@ const rows = [
             paginationModel: { page: 0, pageSize: 5 },
           },
         }}
-        pageSizeOptions={[5, 10]}
-        checkboxSelection
+        pageSizeOptions={[5, 50]}
+        // checkboxSelection
       />
     </div>
       </RightSide>
