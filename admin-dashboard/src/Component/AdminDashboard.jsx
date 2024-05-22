@@ -13,6 +13,7 @@ export const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
   const [rowPerPage, setRowPerPage] = useState(10);
+  const [authorTopWork,setAuthorTopWork] = useState([]);
   const navigate = useNavigate();
 
   const handleClick = (tab) => {
@@ -25,6 +26,13 @@ export const AdminDashboard = () => {
         `https://openlibrary.org/search.json?q=search+terms`
       );
       setTotalPage(Math.ceil(res.data.docs.length / rowPerPage));
+      const newBooksData = res.data.docs;
+      const topWorks = await Promise.all(
+        newBooksData.map(item =>
+          getAuthorTopWork(item.author_name ? item.author_name[0] : "OL23919A")
+        )
+      );
+      setAuthorTopWork(topWorks);
     } catch (error) {
       console.log(error);
     }
@@ -42,11 +50,22 @@ export const AdminDashboard = () => {
         alert("No book found");
         return;
       }
+      console.log(res.data.docs)
       setBooksData(res.data.docs);
       setOriginalBooksData(res.data.docs);
       setIsLoading(false);
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const getAuthorTopWork = async (query) => {
+    try {
+      let res = await axios.get(`https://openlibrary.org/search/authors.json?q=${query}`);
+      return res.data.docs[0].top_work;
+    } catch (error) {
+      console.log(error);
+      return "N/A";
     }
   };
 
@@ -72,6 +91,41 @@ export const AdminDashboard = () => {
     localStorage.removeItem("password");
     navigate("/");
   };
+
+  const jsonToCSV = (json) => {
+    const headers = Object.keys(json[0]);
+    const csvRows = [];
+    csvRows.push(headers.join(','));
+
+    for (const row of json) {
+      const values = headers.map(header => {
+        const escaped = ('' + row[header]).replace(/"/g, '\\"');
+        return `"${escaped}"`;
+      });
+      csvRows.push(values.join(','));
+    }
+
+    return csvRows.join('\n');
+  };
+
+  const downloadCSV = (data, filename) => {
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', filename);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const handleDownload = () => {
+    const csvData = jsonToCSV(booksData.length ? booksData : sortedData);
+    downloadCSV(csvData, 'books_data.csv');
+  };
+
+  console.log(authorTopWork)
 
   useEffect(() => {
     fetchBooksTotalData();
@@ -159,7 +213,7 @@ export const AdminDashboard = () => {
             <button onClick={handleResetData}>Reset</button>
           </div>
           <div className="downloadData">
-            <button>Download Book </button>
+            <button onClick={handleDownload}>Download Book </button>
           </div>
         </div>
         <div className="tableData">
@@ -192,7 +246,7 @@ export const AdminDashboard = () => {
 
                       <th>{item.subject}</th>
                       <th>{item.birth_date ? item.birth_date : ""}</th>
-                      <th>{item.top_work ? item.top_work : ""}</th>
+                      <th>{authorTopWork[i]}</th>
                     </tr>
                   ))
                 : booksData.map((item, i) => (
@@ -209,7 +263,7 @@ export const AdminDashboard = () => {
 
                       <th>{item.subject}</th>
                       <th>{item.birth_date ? item.birth_date : ""}</th>
-                      <th>{item.top_work ? item.top_work : ""}</th>
+                      <th>{authorTopWork[i]}</th>
                     </tr>
                   ))}
             </tbody>
@@ -305,7 +359,7 @@ const RightSide = styled.div`
   width: 81.8%;
   .header {
     display: flex;
-    padding: 10px;
+    padding: 15px;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 5px;
@@ -385,7 +439,7 @@ const RightSide = styled.div`
     display: flex;
     width: 30%;
     justify-content: space-around;
-    margin: 15px auto;
+    margin: 20px auto;
     .rowPerPage{
       display: flex;
       justify-content: space-around;
