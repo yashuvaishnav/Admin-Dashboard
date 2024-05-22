@@ -1,201 +1,33 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export const AdminDashboard = () => {
-  const [searchValue, setSearchValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [sortedData, setSortedData] = useState([]);
   const [booksData, setBooksData] = useState([]);
+  const [originalBooksData, setOriginalBooksData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selected, setSelected] = useState("dashboard");
-
-  const columns = [
-    { field: "ratingAverage", headerName: "Rating Average", width: 120 },
-    { field: "authorName", headerName: "Author name", width: 150 },
-    {
-      field: "title",
-      headerName: "Title",
-      description: "This column has a value getter and is not sortable.",
-      sortable: false,
-      width: 200,
-    },
-    { field: "firstPublishYear", headerName: "First Publish Year", width: 130 },
-    {
-      field: "subject",
-      headerName: "Subject",
-      type: "string",
-      width: 150,
-    },
-    { field: "authorBirthDate", headerName: "Author Birth Date", width: 120 },
-    { field: "authorTopWork", headerName: "Author Top Work", width: 180 },
-  ];
-  const rows = [
-    {
-      id: 1,
-      title: "Snow",
-      authorName: "Jon",
-      ratingAverage: 5,
-      firstPublishYear: 2012,
-      subject: "Math",
-      authorBirthDate: Date.now(),
-      authorTopWork: "yes",
-    },
-    {
-      id: 2,
-      title: "Snow",
-      authorName: "Aline",
-      ratingAverage: 4,
-      firstPublishYear: 2010,
-      subject: "Economy",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 3,
-      title: "Snow",
-      authorName: "Ssm",
-      ratingAverage: 2,
-      firstPublishYear: 2018,
-      subject: "Physics",
-      authorBirthDate: Date.now(),
-      authorTopWork: "yes",
-    },
-    {
-      id: 4,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 5,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 6,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 7,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 8,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 9,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 10,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 11,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 12,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 13,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 14,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 15,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-    {
-      id: 16,
-      title: "Snow",
-      authorName: "Jullie",
-      ratingAverage: 1,
-      firstPublishYear: 2015,
-      subject: "Scince",
-      authorBirthDate: Date.now(),
-      authorTopWork: "no",
-    },
-  ];
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
+  const [rowPerPage, setRowPerPage] = useState(10);
+  const navigate = useNavigate();
 
   const handleClick = (tab) => {
     setSelected(tab);
+  };
+
+  const fetchBooksTotalData = async () => {
+    try {
+      let res = await axios.get(
+        `https://openlibrary.org/search.json?q=search+terms`
+      );
+      setTotalPage(Math.ceil(res.data.docs.length / rowPerPage));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const fetchBooksData = async () => {
@@ -204,31 +36,68 @@ export const AdminDashboard = () => {
       const res = await axios.get(
         searchTerm
           ? `https://openlibrary.org/search.json?q=${searchTerm}`
-          : "https://openlibrary.org/search.json?q=search+terms"
+          : `https://openlibrary.org/search.json?q=search+terms&limit=${rowPerPage}&page=${currentPage}`
       );
       if (res.data.docs.length === 0) {
         alert("No book found");
         return;
       }
-      console.log(res.data.docs);
-      setBooksData(res);
+      setBooksData(res.data.docs);
+      setOriginalBooksData(res.data.docs);
       setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const changeBookData = async () => {
-    try {
-      const res = await axios.put("", "data");
-      // console.log(res);
-    } catch (error) {
-      console.log(error);
-    }
+  const handleSortAsc = () => {
+    const sortData = booksData.sort(
+      (a, b) => a.first_publish_year - b.first_publish_year
+    );
+    setSortedData(sortData);
+  };
+  const handleSortDsc = () => {
+    const sortData = booksData.sort(
+      (a, b) => b.first_publish_year - a.first_publish_year
+    );
+    setSortedData(sortData);
+  };
+  const handleResetData = () => {
+    setSortedData([]);
+    console.log("reset")
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("email");
+    localStorage.removeItem("password");
+    navigate("/");
   };
 
   useEffect(() => {
+    fetchBooksTotalData();
     fetchBooksData();
+  }, [rowPerPage,currentPage,sortedData]);
+
+  useEffect(() => {
+    let res = [];
+    if (searchTerm.length > 3) {
+      // setTimeout(() => {
+      res = booksData?.filter((item, i) => {
+        if (
+          item?.author_name?.[0]
+            ?.toLowerCase()
+            ?.includes(searchTerm?.toLowerCase())
+        ) {
+          return item;
+        }
+      });
+      // }, 1000);
+    }
+    if (res.length > 0) {
+      setBooksData(res);
+    } else {
+      setBooksData(originalBooksData);
+    }
   }, [searchTerm]);
 
   // if(isLoading){
@@ -258,14 +127,16 @@ export const AdminDashboard = () => {
           </Button>
         </div>
         <div className="container">
-          <button className="bottom-button">Logout</button>
+          <button className="bottom-button" onClick={handleLogout}>
+            Logout
+          </button>
         </div>
       </LeftSide>
       <RightSide>
         <div className="header">
           <h2>Dashboard</h2>
           <img
-            src="https://th.bing.com/th/id/R.65c93fce16c1532b3e15a4a52f3ef7f6?rik=nzRaktT%2fUnQRqw&riu=http%3a%2f%2fthispix.com%2fwp-content%2fuploads%2f2015%2f06%2f011.jpg&ehk=gJKh7A8T2u3z4vSqk7O6KLmxjgWQ6OsIxQN3fUiN%2bAM%3d&risl=&pid=ImgRaw&r=0"
+            src="https://cdn4.iconfinder.com/data/icons/small-n-flat/24/user-1024.png"
             width={"50px"}
             height={"50px"}
             alt="profile"
@@ -283,29 +154,94 @@ export const AdminDashboard = () => {
             />
           </div>
           <div className="sortBtnAndResetBtn">
-            <button>Ascending </button>
-            <button>Descending </button>
-            <button>Reset</button>
+            <button onClick={handleSortAsc}>Ascending</button>
+            <button onClick={handleSortDsc}>Descending</button>
+            <button onClick={handleResetData}>Reset</button>
           </div>
           <div className="downloadData">
-            <button onClick={changeBookData}>Download Book </button>
+            <button>Download Book </button>
           </div>
         </div>
+        <div className="tableData">
+          <table border={"1px"}>
+            <thead>
+              <tr>
+                <th>Rating Average</th>
+                <th>Author Name</th>
+                <th>Title</th>
+                <th>First Publish Year</th>
+                <th>Subject</th>
+                <th>Author Birth Date</th>
+                <th>Author Top Work</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(booksData.length > 0 || sortedData.length > 0) &&
+              sortedData.length > 0
+                ? sortedData.map((item, i) => (
+                    <tr key={i}>
+                      <th>{item.ratings_average}</th>
+                      <th>{item.author_name ? item.author_name[0] : ""}</th>
+                      <th>{item.title}</th>
+                      <th>
+                        {" "}
+                        {item.first_publish_year
+                          ? item.first_publish_year
+                          : "publish year not present"}
+                      </th>
 
-        {/* <hr /> */}
-        <div style={{ height: 600, width: "100%" }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            initialState={{
-              pagination: {
-                paginationModel: { page: 0, pageSize: 5 },
-              },
-            }}
-            pageSizeOptions={[5,50,100]}
-            checkboxSelection
-          />
+                      <th>{item.subject}</th>
+                      <th>{item.birth_date ? item.birth_date : ""}</th>
+                      <th>{item.top_work ? item.top_work : ""}</th>
+                    </tr>
+                  ))
+                : booksData.map((item, i) => (
+                    <tr key={i} className="PerbookData">
+                      <th>{item.ratings_average}</th>
+                      <th>{item.author_name ? item.author_name[0] : ""}</th>
+                      <th>{item.title}</th>
+                      <th>
+                        {" "}
+                        {item.first_publish_year
+                          ? item.first_publish_year
+                          : "publish year not present"}
+                      </th>
+
+                      <th>{item.subject}</th>
+                      <th>{item.birth_date ? item.birth_date : ""}</th>
+                      <th>{item.top_work ? item.top_work : ""}</th>
+                    </tr>
+                  ))}
+            </tbody>
+          </table>
         </div>
+        <div className="PaginationAndRowperpage">
+            <div className="rowPerPage">
+            <span>Row per page </span>
+            <select onChange={(e) => setRowPerPage(e.target.value)}>
+              <option value="10">10</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            </div>
+            <PaginationDiv>
+              <button
+                className="prev-button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                Pre
+              </button>
+              <pre> {currentPage} </pre>
+              <button
+                className="next-button"
+                disabled={currentPage === totalPage}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                Next
+              </button>
+            </PaginationDiv>
+          </div>
       </RightSide>
     </MainDiv>
   );
@@ -322,7 +258,6 @@ const MainDiv = styled.div`
 const LeftSide = styled.div`
   background-color: #0e0c0cd5;
   width: 18%;
-  border: 1px solid red;
   .header {
     display: flex;
     padding: 0px 20px;
@@ -334,9 +269,10 @@ const LeftSide = styled.div`
   }
   .container {
     position: relative;
-    height: 80vh;
+    height: 85vh;
     .bottom-button {
       position: absolute;
+      margin-bottom: 10px;
       bottom: 0;
       left: 40%;
       padding: 8px 20px;
@@ -366,22 +302,21 @@ const Button = styled.button`
 
 const RightSide = styled.div`
   color: black;
-  /* padding: 5px; */
-  width: 81.5%;
-  /* background-color: #0e0c0cd5; */
-
-  /* border: 1px solid blue; */
+  width: 81.8%;
   .header {
-    /* border : 1px solid black; */
     display: flex;
     padding: 10px;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-  background-color: #0e0c0cd5;
-
-    h2{
+    background-color: #0e0c0cd5;
+    img{
+      &:hover{
+        cursor: pointer;
+      }
+    }
+    h2 {
       color: #f18070;
     }
   }
@@ -392,7 +327,7 @@ const RightSide = styled.div`
     border: 1px solid black;
     padding: 20px 10px;
     margin-bottom: 20px;
-  background-color: #0e0c0cd5;
+    background-color: #0e0c0cd5;
 
     .searchAuthor {
       input {
@@ -403,7 +338,6 @@ const RightSide = styled.div`
       }
     }
     .sortBtnAndResetBtn {
-      /* border: 2px solid red; */
       padding: 5px;
       button {
         padding: 7px 15px;
@@ -436,5 +370,360 @@ const RightSide = styled.div`
       }
     }
   }
+  .tableData {
+    height: 68vh;
+    overflow-y: auto;
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      td {
+        padding: 0.5rem;
+      }
+    }
+  }
+  .PaginationAndRowperpage{
+    display: flex;
+    width: 30%;
+    justify-content: space-around;
+    margin: 15px auto;
+    .rowPerPage{
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 40%;
+      span{
+        margin-bottom: 3px;
+      }
+      select{
+        padding: 0px;
+      }
+    }
+  }
+`;
+const PaginationDiv = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 1rem;
+  .prev-button,
+  .next-button {
+    background-color: #f18070 ;
+    color: #0e0c0cd5 ;
+    font-weight: bolder;
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .prev-button:hover,
+  .next-button:hover {
+    background-color: #0e0c0cd5;
+    color: #f18070;
+  }
 `;
 
+// export const AdminDashboard = () => {
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [booksData, setBooksData] = useState([]);
+// const [sortedData, setSortedData] = useState([]);
+//   const [filteredData, setFilteredData] = useState([]);
+
+// const fetchBookDetails = async () => {
+// try {
+// Search for the book
+// const searchResponse = await axios.get(
+//   searchTerm
+//     ? https://openlibrary.org/search/authors.json?q="${searchTerm}"
+//     : "https://openlibrary.org/search.json?q=search+terms"
+// );
+// if (searchResponse.data.docs.length === 0) {
+//   alert("No book found");
+//   return;
+// }
+// console.log(searchResponse.data.docs);
+
+// for (let i = 0; i < searchResponse.data.docs.length; i++) {
+//   let obj = {};
+//   console.log(
+//     getAuthorDetails(
+//       searchResponse.data.docs[i].author_key
+//         ? searchResponse.data.docs[i].author_key[0]
+//         : "OL31841A"
+//     )
+//   );
+// }
+
+//     setBooksData(searchResponse.data.docs);
+//   } catch (error) {
+//     console.error("Error fetching book details:", error);
+//   }
+// };
+
+// const searchBookByAuthor = async(authorName) => {
+//   try {
+//     let res = await axios.get(https://openlibrary.org/search/authors.json?q="${authorName}");
+//     console.log(res.data.docs[0].key);
+//     // let filterData = booksData.filter((item,i)=>{
+//     //   let filterKey = item.key.split("/").pop()
+//     //   if(filterKey === res.data.docs[0].key){
+//     //     return item
+//     //   }
+//     // })
+//     console.log(filterData)
+//     // setFilteredData(filterData)
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+// let arr = [];
+// let authorKey = null;
+// const getAuthorDetails = async (authorId) => {
+//   try {
+//     const authorResponse = await axios.get(
+//       https://openlibrary.org/authors/${authorId}.json
+//     );
+//     console.log(authorResponse.data);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
+// const handleSortAsc = () => {
+//   const sortData = booksData.sort(
+//     (a, b) => a.first_publish_year - b.first_publish_year
+//   );
+//   setSortedData(sortData);
+// };
+// const handleSortDsc = () => {
+//   const sortData = booksData.sort(
+//     (a, b) => b.first_publish_year - a.first_publish_year
+//   );
+//   setSortedData(sortData);
+// };
+// const handleResetData = () => {
+//   setSortedData([]);
+// }
+
+// useEffect(() => {
+// fetchBookDetails();
+// searchBookByAuthor(searchTerm);
+
+// }, [searchTerm,sortedData]);
+
+//   return (
+//     <div>
+//       <h1>Admin Dashboard</h1>
+//       <input
+//         type="text"
+//         value={searchTerm}
+//         onChange={(e) => setSearchTerm(e.target.value)}
+//         placeholder="Enter book title"
+//       />
+//       <button>Search</button>
+// <button onClick={handleSortAsc}>Asc</button>
+// <button onClick={handleSortDsc}>Dsc</button>
+
+// <button onClick={handleResetData}>Reset</button>
+//       {(booksData.length > 0 || sortedData.length > 0) &&
+//       sortedData.length > 0
+//         ? sortedData.map((item, i) => (
+//             <div key={i}>
+//               <span>index : {i}</span>
+//               <span>
+//                 {" "}
+//                 title :
+//                 {item.first_publish_year
+//                   ? item.first_publish_year
+//                   : "no first_publish_year present"}
+//               </span>
+//             </div>
+//           ))
+//         : booksData.map((item, i) => (
+//             <DataDiv key={i} className="PerbookData">
+//               <span>index : {i}</span>
+//               <span>
+//                 {" "}
+//                 title :
+//                 {item.first_publish_year
+//                   ? item.first_publish_year
+//                   : "no first_publish_year present"}
+//               </span>
+//               {/* <div>
+//               <p>Author Name : {item.author_name ? item.author_name[0] : "no author name available"}</p>
+//               <p>First publish year : {item.first_publish_year ? item.first_publish_year : "no publish year available"}</p>
+//               <p>Rating average : {item.rating_averege ? item.rating_averege : "no rating average available"}</p>
+//               <p>Subject : {item.subject ? item.subject : "no subject available"}</p>
+//               <p>Birth Date : {item.birth_date ? item.birth_date : "no birthdate available"}</p>
+//             </div> */}
+//             </DataDiv>
+//           ))}
+//     </div>
+//   );
+// };
+
+// rating_average
+// author_name
+// title
+// first_publish_year,
+// subject,
+// author_birth_date,
+// author_top_work
+
+/* const DataDiv = styled.div`
+  border: 1px solid black;
+  margin: 5px;
+`; */
+
+// export const AdminDashboard = () => {
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [booksData, setBooksData] = useState([]);
+// const [sortedData, setSortedData] = useState([]);
+//   const [filteredData, setFilteredData] = useState([]);
+
+// const fetchBookDetails = async () => {
+// try {
+// Search for the book
+// const searchResponse = await axios.get(
+//   searchTerm
+//     ? `https://openlibrary.org/search/authors.json?q="${searchTerm}"`
+//     : "https://openlibrary.org/search.json?q=search+terms"
+// );
+// if (searchResponse.data.docs.length === 0) {
+//   alert("No book found");
+//   return;
+// }
+// console.log(searchResponse.data.docs);
+
+// for (let i = 0; i < searchResponse.data.docs.length; i++) {
+//   let obj = {};
+//   console.log(
+//     getAuthorDetails(
+//       searchResponse.data.docs[i].author_key
+//         ? searchResponse.data.docs[i].author_key[0]
+//         : "OL31841A"
+//     )
+//   );
+// }
+
+//     setBooksData(searchResponse.data.docs);
+//   } catch (error) {
+//     console.error("Error fetching book details:", error);
+//   }
+// };
+
+// const searchBookByAuthor = async(authorName) => {
+//   try {
+//     let res = await axios.get(`https://openlibrary.org/search/authors.json?q="${authorName}"`);
+//     console.log(res.data.docs[0].key);
+//     // let filterData = booksData.filter((item,i)=>{
+//     //   let filterKey = item.key.split("/").pop()
+//     //   if(filterKey === res.data.docs[0].key){
+//     //     return item
+//     //   }
+//     // })
+//     console.log(filterData)
+//     // setFilteredData(filterData)
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+// let arr = [];
+// let authorKey = null;
+// const getAuthorDetails = async (authorId) => {
+//   try {
+//     const authorResponse = await axios.get(
+//       `https://openlibrary.org/authors/${authorId}.json`
+//     );
+//     console.log(authorResponse.data);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
+// const handleSortAsc = () => {
+//   const sortData = booksData.sort(
+//     (a, b) => a.first_publish_year - b.first_publish_year
+//   );
+//   setSortedData(sortData);
+// };
+// const handleSortDsc = () => {
+//   const sortData = booksData.sort(
+//     (a, b) => b.first_publish_year - a.first_publish_year
+//   );
+//   setSortedData(sortData);
+// };
+// const handleResetData = () => {
+//   setSortedData([]);
+// }
+
+// useEffect(() => {
+// fetchBookDetails();
+// searchBookByAuthor(searchTerm);
+
+// }, [searchTerm,sortedData]);
+
+//   return (
+//     <div>
+//       <h1>Admin Dashboard</h1>
+//       <input
+//         type="text"
+//         value={searchTerm}
+//         onChange={(e) => setSearchTerm(e.target.value)}
+//         placeholder="Enter book title"
+//       />
+//       <button>Search</button>
+// <button onClick={handleSortAsc}>Asc</button>
+// <button onClick={handleSortDsc}>Dsc</button>
+
+// <button onClick={handleResetData}>Reset</button>
+//       {(booksData.length > 0 || sortedData.length > 0) &&
+//       sortedData.length > 0
+//         ? sortedData.map((item, i) => (
+//             <div key={i}>
+//               <span>index : {i}</span>
+//               <span>
+//                 {" "}
+//                 title :
+//                 {item.first_publish_year
+//                   ? item.first_publish_year
+//                   : "no first_publish_year present"}
+//               </span>
+//             </div>
+//           ))
+//         : booksData.map((item, i) => (
+//             <DataDiv key={i} className="PerbookData">
+//               <span>index : {i}</span>
+//               <span>
+//                 {" "}
+//                 title :
+//                 {item.first_publish_year
+//                   ? item.first_publish_year
+//                   : "no first_publish_year present"}
+//               </span>
+//               {/* <div>
+//               <p>Author Name : {item.author_name ? item.author_name[0] : "no author name available"}</p>
+//               <p>First publish year : {item.first_publish_year ? item.first_publish_year : "no publish year available"}</p>
+//               <p>Rating average : {item.rating_averege ? item.rating_averege : "no rating average available"}</p>
+//               <p>Subject : {item.subject ? item.subject : "no subject available"}</p>
+//               <p>Birth Date : {item.birth_date ? item.birth_date : "no birthdate available"}</p>
+//             </div> */}
+//             </DataDiv>
+//           ))}
+//     </div>
+//   );
+// };
+
+// rating_average
+// author_name
+// title
+// first_publish_year,
+// subject,
+// author_birth_date,
+// author_top_work
+
+/* const DataDiv = styled.div`
+  border: 1px solid black;
+  margin: 5px;
+`; */
