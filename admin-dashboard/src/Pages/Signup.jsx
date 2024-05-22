@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const defaultTheme = createTheme();
 
@@ -22,14 +23,18 @@ export const SignUp = () => {
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const navigate = useNavigate();
 
   const handleSignupData = (e) => {
     e.preventDefault();
+    localStorage.setItem('email', email);
+    localStorage.setItem('password', password);
     console.log(firstName,lastName,email,password)
     setFirstName("");
     setLastName("");
     setEmail("");
     setPassword("");
+    navigate("/")
   }
 
   return (
@@ -120,7 +125,7 @@ export const SignUp = () => {
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-              <Link href="/login" variant="body2">
+              <Link href="/" variant="body2">
                   Already have an account? Sign in
                 </Link>
               </Grid>

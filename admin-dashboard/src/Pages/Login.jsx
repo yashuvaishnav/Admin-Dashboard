@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -23,16 +24,23 @@ const defaultTheme = createTheme();
 export const Login = () => {
   const [email,setEmail] = useState("")
   const [password,setPassword] = useState("")
+  const navigate = useNavigate()
 
 
 
   const handleLoginData = (e) => {
     e.preventDefault();
-    console.log(email,password);
-    setEmail("");
-    setPassword("");
+    const storedEmail = localStorage.getItem('email');
+    const storedPassword = localStorage.getItem('password');
 
-  };
+    if (email === storedEmail && password === storedPassword) {
+      alert('Login successful');
+      navigate("/admindashboard")
+      
+    } else {
+      alert('Invalid email or password');
+    }
+  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
