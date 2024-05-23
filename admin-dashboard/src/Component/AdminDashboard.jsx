@@ -37,6 +37,7 @@ export const AdminDashboard = () => {
       console.log(error);
     }
   };
+  console.log(booksData)
 
   const fetchBooksData = async () => {
     try {
@@ -50,7 +51,7 @@ export const AdminDashboard = () => {
         alert("No book found");
         return;
       }
-      console.log(res.data.docs)
+      // console.log(res.data.docs)
       setBooksData(res.data.docs);
       setOriginalBooksData(res.data.docs);
       setIsLoading(false);
@@ -64,7 +65,7 @@ export const AdminDashboard = () => {
       let res = await axios.get(`https://openlibrary.org/search/authors.json?q=${query}`);
       return res.data.docs[0].top_work;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       return "N/A";
     }
   };
@@ -125,8 +126,7 @@ export const AdminDashboard = () => {
     downloadCSV(csvData, 'books_data.csv');
   };
 
-  console.log(authorTopWork)
-
+  // console.log(authorTopWork)
   useEffect(() => {
     fetchBooksTotalData();
     fetchBooksData();
@@ -154,9 +154,9 @@ export const AdminDashboard = () => {
     }
   }, [searchTerm]);
 
-  if(isLoading){
-    return <h1>Loading...</h1>
-  }
+  // if(isLoading){
+  //   return <h1>Loading...</h1>
+  // }
 
   return (
     <MainDiv>
@@ -216,7 +216,7 @@ export const AdminDashboard = () => {
             <button onClick={handleDownload}>Download Book </button>
           </div>
         </div>
-        <div className="tableData">
+        {isLoading ? <h1>Data is Loading...</h1> : <div className="tableData">
           <table border={"1px"}>
             <thead>
               <tr>
@@ -234,41 +234,41 @@ export const AdminDashboard = () => {
               sortedData.length > 0
                 ? sortedData.map((item, i) => (
                     <tr key={i}>
-                      <th>{item.ratings_average}</th>
-                      <th>{item.author_name ? item.author_name[0] : ""}</th>
-                      <th>{item.title}</th>
+                      <th>{item.ratings_average ? item.ratings_average : "NA"}</th>
+                      <th>{item.author_name ? item.author_name[0] : "NA"}</th>
+                      <th>{item.title ? item.title : "NA"}</th>
                       <th>
                         {" "}
                         {item.first_publish_year
                           ? item.first_publish_year
-                          : "publish year not present"}
+                          : "NA"}
                       </th>
 
-                      <th>{item.subject}</th>
-                      <th>{item.birth_date ? item.birth_date : ""}</th>
+                      <th>{item.subject ? item.subject.slice(0,10) : "NA"}</th>
+                      <th>{item.birth_date ? item.birth_date : "NA"}</th>
                       <th>{authorTopWork[i]}</th>
                     </tr>
                   ))
                 : booksData.map((item, i) => (
                     <tr key={i} className="PerbookData">
-                      <th>{item.ratings_average}</th>
-                      <th>{item.author_name ? item.author_name[0] : ""}</th>
-                      <th>{item.title}</th>
+                      <th>{item.ratings_average ? item.ratings_average : "NA"}</th>
+                      <th>{item.author_name ? item.author_name[0] : "NA"}</th>
+                      <th>{item.title ? item.title : "NA"}</th>
                       <th>
                         {" "}
                         {item.first_publish_year
                           ? item.first_publish_year
-                          : "publish year not present"}
+                          : "NA"}
                       </th>
 
-                      <th>{item.subject}</th>
-                      <th>{item.birth_date ? item.birth_date : ""}</th>
+                      <th>{item.subject ? item.subject.slice(0,10)  : "NA"}</th>
+                      <th>{item.birth_date ? item.birth_date : "NA"}</th>
                       <th>{authorTopWork[i]}</th>
                     </tr>
                   ))}
             </tbody>
           </table>
-        </div>
+        </div>}
         <div className="PaginationAndRowperpage">
             <div className="rowPerPage">
             <span>Row per page </span>
